@@ -21,7 +21,12 @@ exports.aceSelectionChanged = (hook, context) => {
   const selStart = context.rep.selStart;
   const selEnd = context.rep.selEnd;
   if ((selStart[0] !== selEnd[0]) || (selStart[1] !== selEnd[1])) {
-    iT.show();
+    /**
+     * 与下方官方bug处理相呼应
+     */
+    setTimeout(() => {
+      iT.show();
+    }, 200)
   } else {
     iT.hide(); // hide if nothing is selected
   }
@@ -30,17 +35,49 @@ exports.aceSelectionChanged = (hook, context) => {
 exports.postAceInit = (hookName, context) => {
   const padOuter = $('iframe[name="ace_outer"]').contents().find('body');
   const padInner = padOuter.contents('iframe').contents().find('body');
+  const padOuterHTML = $('iframe[name="ace_outer"]').contents().find('html');
+
+  const padOuterOffsetTop = $('iframe[name="ace_outer"]').offset().top;
+  const innerOffsetLeft = padOuter.find('iframe').offset().left;
+  const innerOffsetTop = padOuter.find('iframe').offset().top;
+
   padOuter.on('mouseup', (e) => {
     iT.hide();
   });
-  padInner.on('mouseup', (e) => {
-    const toolbar = padOuter.find('#inline_toolbar');
-    const left = e.pageX + padOuter.find('iframe').offset().left;
-    toolbar.css({
-      position: 'absolute',
-      left,
-      top: e.pageY,
-    });
+  padInner.on('mouseup', (event) => {
+    context.ace.callWithAce((ace) => {
+      const selection = event.view.getSelection();
+
+      /**
+       * 官方bug，必须延迟200毫秒才能获得准确的rep
+       */
+      setTimeout(() => {
+        /**
+         * 这里做一层拦截，解决弹窗闪烁问题
+         */
+        const { selStart, selEnd } = ace.ace_getRep();
+        console.log('rep', selStart, selEnd)
+        if ((selStart[0] === selEnd[1]) && (selStart[1] === selEnd[0])) return;
+        /**
+         * 创建边界矩形，添加当前seleciton，计算当前光标位置
+         */
+        const range = event.view.document.createRange();
+        const rangeStart = selection.anchorOffset;
+        const rangeEnd = selection.focusOffset;
+
+        range.setStart(selection.anchorNode, rangeStart)
+        range.setEnd(selection.focusNode, rangeEnd)
+
+        const clientRect = range.getBoundingClientRect();
+
+        const toolbar = padOuter.find('#inline_toolbar');
+        toolbar.css({
+          position: 'absolute',
+          left: innerOffsetLeft + clientRect.x,
+          top: padOuterOffsetTop + innerOffsetTop + clientRect.y - padOuterHTML[0].scrollTop - 58,
+        });
+      }, 200)
+    })
   });
 };
 
@@ -78,7 +115,9 @@ exports.postToolbarInit = (hook, context) => {
     'background-color': 'white',
     'border-radius': '6px',
     'border': '1px solid #f5f5f5',
-    'padding': '3px 5px'
+    'padding': '3px 5px',
+    'position': 'absolute',
+    'top': '-9999px'
   });
   $('#inline_toolbar li').css({
     'margin': '0 3px',
