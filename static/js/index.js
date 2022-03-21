@@ -50,7 +50,7 @@ exports.postAceInit = (hookName, context) => {
  * 根据配置的数组深度进行分隔符的插入
  */
 exports.postToolbarInit = (hook, context) => {
-  const toolbarConfigs = clientVars.ep_inline_toolbar || [];
+  const toolbarConfigs = clientVars.ep_inline_toolbar_pro || [];
   const dividerTemplate = '<div style="width: 1px; height: 17px; margin: 0 4px; background: #f5f5f5" />';
 
   toolbarConfigs.forEach((children, idx) => {
