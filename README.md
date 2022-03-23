@@ -13,6 +13,7 @@ etherpad-lite inlineToolbar 组件
 ## Undo
 
 - 重构弹窗定位计算方法
+- 移动端兼容
 
 ## Problem
 

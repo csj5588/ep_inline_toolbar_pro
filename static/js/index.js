@@ -18,6 +18,9 @@ exports.documentReady = () => {
 }
 
 exports.aceSelectionChanged = (hook, context) => {
+  const hasMobileLayout = $('body').hasClass('mobile-layout');
+  if (hasMobileLayout) return;
+
   const selStart = context.rep.selStart;
   const selEnd = context.rep.selEnd;
   if ((selStart[0] !== selEnd[0]) || (selStart[1] !== selEnd[1])) {
@@ -32,7 +35,14 @@ exports.aceSelectionChanged = (hook, context) => {
   }
 };
 
+/**
+ * 插件事件绑定
+ * @remark 移动端兼容
+ */
 exports.postAceInit = (hookName, context) => {
+  const hasMobileLayout = $('body').hasClass('mobile-layout');
+  if (hasMobileLayout) return;
+
   const padOuter = $('iframe[name="ace_outer"]').contents().find('body');
   const padInner = padOuter.contents('iframe').contents().find('body');
   const padOuterHTML = $('iframe[name="ace_outer"]').contents().find('html');
@@ -56,7 +66,6 @@ exports.postAceInit = (hookName, context) => {
          * 这里做一层拦截，解决弹窗闪烁问题
          */
         const { selStart, selEnd } = ace.ace_getRep();
-        console.log('rep', selStart, selEnd)
         if ((selStart[0] === selEnd[1]) && (selStart[1] === selEnd[0])) return;
         /**
          * 创建边界矩形，添加当前seleciton，计算当前光标位置
@@ -85,8 +94,15 @@ exports.postAceInit = (hookName, context) => {
  * 根据配置生成inlineToolbar的按钮
  * 其中一些按钮是系统自带的，有些是插件中的
  * 根据配置的数组深度进行分隔符的插入
+ * @remark 移动端场景兼容-移动端禁止inlineToolbar
  */
 exports.postToolbarInit = (hook, context) => {
+  const hasMobileLayout = $('body').hasClass('mobile-layout');
+  if (hasMobileLayout) {
+    $('#editbar .menu_left').css('opacity', '1');
+    return;
+  }
+
   const toolbarConfigs = clientVars.ep_inline_toolbar_pro || [];
   const dividerTemplate = '<div style="width: 1px; height: 17px; margin: 0 4px; background: #f5f5f5" />';
 
