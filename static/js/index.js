@@ -1,6 +1,8 @@
 'use strict';
 
-const iT = {
+const { isEqual } = require('ep_etherpad-lite/static/js/common_utils');
+
+const inlineRef = {
   hide: () => {
     const padOuter = $('iframe[name="ace_outer"]').contents().find('body');
     const inlineToolbar = padOuter.find('#inline_toolbar');
@@ -11,6 +13,10 @@ const iT = {
     const inlineToolbar = padOuter.find('#inline_toolbar');
     $(inlineToolbar).fadeIn('fast')
   },
+  prevRep: {
+    selStart: [0, 0],
+    selEnd: [0, 0]
+  }
 };
 
 exports.documentReady = () => {
@@ -27,11 +33,9 @@ exports.aceSelectionChanged = (hook, context) => {
     /**
      * 与下方官方bug处理相呼应
      */
-    setTimeout(() => {
-      iT.show();
-    }, 200)
+    setTimeout(() => inlineRef.show(), 300)
   } else {
-    iT.hide(); // hide if nothing is selected
+    inlineRef.hide(); // hide if nothing is selected
   }
 };
 
@@ -45,14 +49,14 @@ exports.postAceInit = (hookName, context) => {
 
   const padOuter = $('iframe[name="ace_outer"]').contents().find('body');
   const padInner = padOuter.contents('iframe').contents().find('body');
+  const padOuterHTML = $('iframe[name="ace_outer"]').contents().find('html');
 
   const padOuterOffsetTop = $('iframe[name="ace_outer"]').offset().top;
   const innerOffsetLeft = padOuter.find('iframe').offset().left;
   const innerOffsetTop = padOuter.find('iframe').offset().top;
 
-  padOuter.on('mouseup', (e) => {
-    iT.hide();
-  });
+  padOuter.on('mouseup', (e) => inlineRef.hide());
+
   padInner.on('mouseup', (event) => {
     context.ace.callWithAce((ace) => {
       const selection = event.view.getSelection();
@@ -63,9 +67,16 @@ exports.postAceInit = (hookName, context) => {
       setTimeout(() => {
         /**
          * 这里做一层拦截，解决弹窗闪烁问题
+         * 存储上一次的rep，下次如果相同，则拦截
          */
         const { selStart, selEnd } = ace.ace_getRep();
+
         if ((selStart[0] === selEnd[1]) && (selStart[1] === selEnd[0])) return;
+        if (isEqual(inlineRef.prevRep.selStart, selStart) && isEqual(inlineRef.prevRep.selEnd, selEnd)) return;
+
+        inlineRef.prevRep.selStart = selStart;
+        inlineRef.prevRep.selEnd = selEnd;
+
         /**
          * 创建边界矩形，添加当前seleciton，计算当前光标位置
          */
