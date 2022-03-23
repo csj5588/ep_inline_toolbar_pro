@@ -45,7 +45,6 @@ exports.postAceInit = (hookName, context) => {
 
   const padOuter = $('iframe[name="ace_outer"]').contents().find('body');
   const padInner = padOuter.contents('iframe').contents().find('body');
-  const padOuterHTML = $('iframe[name="ace_outer"]').contents().find('html');
 
   const padOuterOffsetTop = $('iframe[name="ace_outer"]').offset().top;
   const innerOffsetLeft = padOuter.find('iframe').offset().left;
@@ -83,7 +82,7 @@ exports.postAceInit = (hookName, context) => {
         toolbar.css({
           position: 'absolute',
           left: innerOffsetLeft + clientRect.x,
-          top: padOuterOffsetTop + innerOffsetTop + clientRect.y - padOuterHTML[0].scrollTop - 58,
+          top: padOuterOffsetTop + innerOffsetTop + clientRect.y - 58,
         });
       }, 200)
     })
@@ -125,6 +124,7 @@ exports.postToolbarInit = (hook, context) => {
 
   /**
    * @description inline_toolbar style
+   * 插入到padOuter中
    */
   const padOuter = $('iframe[name="ace_outer"]').contents().find('body');
   $('#inline_toolbar').css({
