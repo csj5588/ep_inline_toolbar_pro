@@ -9,11 +9,11 @@ etherpad-lite inlineToolbar 组件
 - 重构配置项方法
 - 重构展示逻辑
 - 添加过渡动画
+- 移动端兼容
 
 ## Undo
 
 - 重构弹窗定位计算方法
-- 移动端兼容
 
 ## Problem
 
