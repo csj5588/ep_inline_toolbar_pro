@@ -49,14 +49,12 @@ exports.postAceInit = (hookName, context) => {
 
   const padOuter = $('iframe[name="ace_outer"]').contents().find('body');
   const padInner = padOuter.contents('iframe').contents().find('body');
-  const padOuterHTML = $('iframe[name="ace_outer"]').contents().find('html');
 
   const padOuterOffsetTop = $('iframe[name="ace_outer"]').offset().top;
   const innerOffsetLeft = padOuter.find('iframe').offset().left;
   const innerOffsetTop = padOuter.find('iframe').offset().top;
 
   padOuter.on('mouseup', (e) => inlineRef.hide());
-
   padInner.on('mouseup', (event) => {
     context.ace.callWithAce((ace) => {
       const selection = event.view.getSelection();
